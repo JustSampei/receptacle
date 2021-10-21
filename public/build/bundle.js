@@ -525,9 +525,9 @@ var app = (function () {
     			span = element("span");
     			i = element("i");
     			attr_dev(img, "class", "has-border-left-or-top-radius-special svelte-1dw61qo");
-    			if (!src_url_equal(img.src, img_src_value = "https://bulma.io/images/placeholders/128x128.png")) attr_dev(img, "src", img_src_value);
+    			if (!src_url_equal(img.src, img_src_value = "https://bulma.io/images/placeholders/256x256.png")) attr_dev(img, "src", img_src_value);
     			add_location(img, file$6, 4, 4, 176);
-    			attr_dev(figure, "class", "image is-3by2");
+    			attr_dev(figure, "class", "image is-4by3");
     			add_location(figure, file$6, 3, 3, 141);
     			attr_dev(div0, "class", "column is-4 has-no-padding svelte-1dw61qo");
     			add_location(div0, file$6, 2, 2, 97);

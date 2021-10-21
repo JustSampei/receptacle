@@ -1,10 +1,10 @@
 <div class="box container has-no-padding block">
 	<div class="columns is-mobile is-vcentered">
 		<div class="column is-4 has-no-padding">
-			<figure class="image is-3by2">
+			<figure class="image is-4by3">
 				<img
 					class="has-border-left-or-top-radius-special"
-					src="https://bulma.io/images/placeholders/128x128.png"
+					src="https://bulma.io/images/placeholders/256x256.png"
 				/>
 			</figure>
 		</div>
