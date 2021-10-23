@@ -31,8 +31,4 @@
 	i {
 		pointer-events: initial;
 	}
-
-	.is-ubuntu {
-		font-family: is-ubuntu;
-	}
 </style>

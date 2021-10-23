@@ -3,6 +3,10 @@
 	src: url(./fonts/Ubuntu-Regular.ttf);
 }
 
+.is-ubuntu {
+	font-family: is-ubuntu;
+}
+
 /* total width */
 body::-webkit-scrollbar {
     background-color: #fff;
