@@ -1,46 +1,107 @@
 <script lang="ts">
 	import SearchBar from "./components/SearchBar.svelte";
-	import ReceiptList from "./components/list_page/ReceiptList.svelte";
+	import RecipeList from "./components/list_page/RecipeList.svelte";
 	import Features from "./components/Features.svelte";
-	import Receipt from "./components/receipt_page/Receipt.svelte";
+	import Recipe from "./components/recipe_page/Recipe.svelte";
 
-	export let name: string;
+	import { bookmarks_store } from "./stores/Bookmarks";
+	import { recipes_store } from "./stores/Recipes";
+	import { queries } from "./Queries"
 
-	let receipt = {
-		id: 1,
-		title: "Pizza",
-		ingredients: [
-			"1 Cup Ingrediente",
-			"2 Cups Ingrediente",
-			"3 Cups Ingrediente",
-			"4 Cups Ingrediente",
-			"5 Cups Ingrediente",
-		],
-		image_receipt: "https://bulma.io/images/placeholders/256x256.png",
-	};
+	let bookmarks,
+		bookmarks_recipes = [],
+		recipes = [],
+		recipe_to_open;
 
-	import {bookmarks_store} from "./stores/Bookmarks";
+	let open_bookmarks = false,
+		searching = false,
+		open_recipe = false,
+		is_back_hidden = true,
+		is_bookmarks_hidden = false;
 
-	let bookmarks;
-
-	bookmarks_store.subscribe(value => {
+	bookmarks_store.subscribe(async (value) => {
 		bookmarks = value;
-	})
+		bookmarks_recipes = await getBookmarksRecipes(bookmarks);
+	});
 
-	let is_added_to_bookmarks = bookmarks.includes(receipt.id);
+	recipes_store.subscribe((value) => {
+		recipes = value;
+	});
 
-	const addReceiptToBookmarks = (event) => {
-		let receipt_id = event.detail.id;
-		
-		bookmarks_store.update(bookmarks = bookmarks.push(receipt_id));
+	const addRecipeToBookmarks = (event) => {
+		let recipe_id = event.detail.id;
+		if (bookmarks.includes(recipe_id)) return;
+		bookmarks.push(recipe_id);
+		bookmarks_store.set(bookmarks);
 	};
 
 	const removeFromBookmarks = (event) => {
-		let receipt_id = event.detail.id;
-		let index_bookmark = bookmarks.indexOf(receipt_id);
+		let recipe_id = event.detail.id;
+		let index_bookmark = bookmarks.indexOf(recipe_id);
 		bookmarks.splice(index_bookmark, 1);
-		is_added_to_bookmarks = event.detail.is_added_to_bookmarks;
+		bookmarks_store.set(bookmarks);
 	};
+
+	const openRecipe = async (event) => {
+		let recipe_id = event.detail.recipe;
+		recipe_to_open = await getRecipe(recipe_id);
+		open_recipe = true;
+		is_back_hidden = false;
+		is_bookmarks_hidden = true;
+	};
+
+	const closeRecipe = () => {
+		recipe_to_open = null;
+		open_recipe = false;
+		is_back_hidden = true;
+		is_bookmarks_hidden = false;
+	};
+
+	const handleOpenCloseBookmarks = (event) => {
+		if (open_recipe && !open_bookmarks) closeRecipe();
+		open_bookmarks = event.detail.open_close;
+	};
+
+	async function getRecipes(query) {
+		if (!queries.includes(query)) return;
+		try {
+			let recipes_response = await fetch(
+				`https://forkify-api.herokuapp.com/api/search?q=${query}`
+			);
+			let recipes_data = await recipes_response.json();
+			recipes_store.set(recipes_data.recipes);
+		} catch (e) {
+			//console.error(e);
+			recipes_store.set([]);
+		}
+	}
+
+	const handleSearching = async (event) => {
+		await getRecipes(event.detail.searched);
+		searching = event.detail.search;
+	};
+
+	async function getRecipe (recipe) {
+		let recipe_data;
+		try {
+			let recipe_response = await fetch(
+				`https://forkify-api.herokuapp.com/api/get?rId=${recipe}`
+			);
+			recipe_data = await recipe_response.json();
+		} catch (e) {
+			console.error(e);
+		}
+		return recipe_data.recipe;
+	}
+
+	async function getBookmarksRecipes(bookmarks) {
+		let bookmarks_datas = [];
+		for (const recipe of bookmarks) {
+			let bookmark_recipe = await getRecipe(recipe);
+			bookmarks_datas.push(bookmark_recipe);
+		}
+		return bookmarks_datas;
+	}
 </script>
 
 <main>
@@ -54,15 +115,40 @@
 						Receptacle.
 					</p>
 				</section>
-				<SearchBar />
-				<Features />
-				<ReceiptList bookmarks={bookmarks} />
-				<Receipt
-					receipt={receipt}
-					is_added_to_bookmarks={is_added_to_bookmarks}
-					on:addBookmark={addReceiptToBookmarks}
-					on:removeBookmark={removeFromBookmarks}
+				<SearchBar on:search={handleSearching} />
+				<Features
+					{open_bookmarks}
+					{is_back_hidden}
+					{is_bookmarks_hidden}
+					on:closeRecipe={closeRecipe}
+					on:openCloseBookmarks={handleOpenCloseBookmarks}
 				/>
+				{#if open_bookmarks && !open_recipe && bookmarks_recipes}
+					<RecipeList
+						{bookmarks}
+						recipes={bookmarks_recipes}
+						on:addBookmark={addRecipeToBookmarks}
+						on:removeBookmark={removeFromBookmarks}
+						on:openRecipe={openRecipe}
+					/>
+				{:else if searching && !open_recipe && recipes}
+					<RecipeList
+						bookmarks={bookmarks}
+						recipes={recipes}
+						on:addBookmark={addRecipeToBookmarks}
+						on:removeBookmark={removeFromBookmarks}
+						on:openRecipe={openRecipe}
+					/>
+				{:else if open_recipe && recipe_to_open}
+					<Recipe
+						recipe={recipe_to_open}
+						is_added_to_bookmarks={bookmarks.includes(
+							recipe_to_open.recipe_id
+						)}
+						on:addBookmark={addRecipeToBookmarks}
+						on:removeBookmark={removeFromBookmarks}
+					/>
+				{/if}
 			</div>
 		</div>
 	</section>

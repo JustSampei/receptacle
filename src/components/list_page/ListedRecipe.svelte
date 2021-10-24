@@ -2,32 +2,37 @@
 	import ButtonIcon from "../mini_components/ButtonIcon.svelte";
 	import { fade } from "svelte/transition";
 	import { createEventDispatcher } from "svelte";
+import Recipe from "../recipe_page/Recipe.svelte";
 
 	export let id,
 		title,
 		subtitle,
 		image_src;
-
-	export let bookmarks;
 	
-	let is_added_to_bookmarks;
+	export let is_added_to_bookmarks = false;
 
 	const dispatcher = createEventDispatcher();
 
 	const handleAddRemove = () => {
 		is_added_to_bookmarks = !is_added_to_bookmarks;
 		dispatcher("addRemove", {
-			add_remove: is_added_to_bookmarks,
-			id: id
+			id: id,
+			add_remove: is_added_to_bookmarks
 		});
 	};
+
+	const handleClick = () => {
+		dispatcher('open', {
+			recipe_id: id
+		})
+	}
 </script>
 
 <div class="box container has-no-padding block" transition:fade>
 	<div
 		class="columns is-mobile is-vcentered has-box-sizing-for-image has-no-margin"
 	>
-		<div class="column is-4 has-no-padding">
+		<div class="column is-5 has-no-padding" on:click={handleClick}>
 			<figure class="image has-fit-cover">
 				<img
 					alt={title}
@@ -36,11 +41,11 @@
 				/>
 			</figure>
 		</div>
-		<div class="column is-4 has-no-padding has-text-centered">
-			<p class="subtitle  is-4 has-text-weight-bold">{title}</p>
-			<p class="subtitle is-ubuntu is-6">{subtitle}</p>
+		<div class="column is-5 has-no-padding has-text-centered" on:click={handleClick}>
+			<p class="subtitle has-text-weight-bold">{title}</p>
+			<p class="subtitle is-ubuntu">{subtitle}</p>
 		</div>
-		<div class="column is-4 has-no-padding has-text-centered">
+		<div class="column is-2 has-no-padding has-text-centered">
 			<ButtonIcon
 				icon={"fa-bookmark"}
 				is_icon_full={is_added_to_bookmarks}

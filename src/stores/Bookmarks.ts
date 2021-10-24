@@ -1,7 +1,17 @@
 import { writable } from 'svelte/store';
 
-const bookmarks_stored: string = localStorage.bookmarks;
+const bookmarks_stored = localStorage.getItem('bookmarks');
 
-export const bookmarks_store = writable(JSON.parse(bookmarks_stored) || JSON.parse('[]'));
+let bookmarks;
 
-bookmarks_store.subscribe((value) => localStorage.bookmarks = value);
+try {
+	bookmarks = writable(JSON.parse(bookmarks_stored));
+} catch (error) {
+	bookmarks = writable([]);
+}
+
+if (bookmarks == undefined) bookmarks = writable([]);
+
+export const bookmarks_store = bookmarks
+
+bookmarks_store.subscribe((value) => localStorage.setItem('bookmarks', JSON.stringify(value)));

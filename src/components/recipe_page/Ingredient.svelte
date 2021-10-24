@@ -7,7 +7,9 @@
 </script>
 
 <div class="column is-half has-text-centered">
-	<TextIcon icon={"fa-check"} label={amount + ingredient}></TextIcon>
+	{#if ingredient != ""}
+		<TextIcon icon={"fa-check"} label={amount + "  " + ingredient}></TextIcon>
+	{/if}
 </div>
 
 <style>

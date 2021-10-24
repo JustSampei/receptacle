@@ -3,16 +3,19 @@ import { createEventDispatcher } from "svelte";
 
 	import ButtonIcon from "../mini_components/ButtonIcon.svelte";
 
-	export let title, is_added_to_bookmarks;
+	export let title, id;
+
+	export let is_added_to_bookmarks = false;
 
 	const dispatcher = createEventDispatcher();
 
 	const handleAddRemove = () => {
 		is_added_to_bookmarks = !is_added_to_bookmarks;
 		dispatcher("addRemove", {
-			add_remove: is_added_to_bookmarks,
+			id: id,
+			add_remove: is_added_to_bookmarks
 		});
-	}
+	};
 	
 </script>
 
@@ -25,7 +28,7 @@ import { createEventDispatcher } from "svelte";
 			<ButtonIcon
 				icon={"fa-bookmark"}
 				is_icon_full={is_added_to_bookmarks}
-				label={"Add to Bookmarks"}
+				label={is_added_to_bookmarks ? "Added to Bookmarks" : "Add to Bookmarks"}
 				handleClick={() => handleAddRemove()}
 			/>
 		</div>

@@ -2,7 +2,9 @@
 	import Ingredient from "./Ingredient.svelte";
 
 	export let amounts = ["1", "2", "3","4","5"];
-	export let ingredients = ["Ingrediente", "Ingrediente", "Ingrediente", "Ingrediente", "Ingrediente"];
+	export let ingredients;
+
+	console.log(ingredients)
 </script>
 
 <div class="container block has-text-centered">
@@ -20,5 +22,7 @@
 
 
 <style>
-
+	.has-no-margin {
+		margin: 0;
+	}
 </style>

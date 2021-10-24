@@ -41,4 +41,7 @@ import { createEventDispatcher } from "svelte";
 </div>
 
 <style>
+	.has-no-margin {
+		margin: 0;
+	}
 </style>
