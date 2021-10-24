@@ -1,9 +1,7 @@
 <script>
 	import TextIcon from "../mini_components/TextIcon.svelte";
 
-	export let ingredient, amount, servings = 4;
-
-	if (amount != 4 && amount >= 0) amount = (amount * servings) / 4;
+	export let ingredient, amount;
 </script>
 
 <div class="column is-half has-text-centered">

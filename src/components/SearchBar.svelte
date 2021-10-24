@@ -15,6 +15,10 @@ import { createEventDispatcher } from "svelte";
 			searched: searched
 		})
 	}
+
+	const handleKey = (e) => {
+		if (e.keyCode == 13) handleSearch();
+	}
 </script>
 
 <div class="container block">
@@ -24,12 +28,13 @@ import { createEventDispatcher } from "svelte";
 			<div class="control has-icons-right">
 				<input
 					bind:value={searched}
+					on:keypress={handleKey}
 					class="input is-rounded is-ubuntu"
 					type="text"
 					placeholder="Search for recipes..."
 				/>
 				<span class="icon is-right" on:click={handleSearch}>
-					<i class="fas fa-search has-text-black-ter" />
+					<i class="fas fa-search has-text-black-ter"/>
 				</span>
 			</div>
 		</div>

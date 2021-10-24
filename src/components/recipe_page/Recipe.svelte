@@ -1,20 +1,44 @@
 <script lang="ts">
-	import IngridientList from "./IngredientList.svelte";
+	import IngredientList from "./IngredientList.svelte";
 	import ButtonIcon from "../mini_components/ButtonIcon.svelte";
 	import TimingAndServings from "./TimingAndServings.svelte";
 	import TitleAndAddBookmark from "./TitleAndAddBookmark.svelte";
 	import { createEventDispatcher } from "svelte";
+import { loop_guard } from "svelte/internal";
 
-	export let is_added_to_bookmarks;
+	export let is_added_to_bookmarks: boolean;
 
 	export let recipe;
 
-	let servings = 4; //Non presente nelle API, default 4
-
-	const handleServings = (event) => {
-		servings += event.detail.variation;
-		if (servings < 1) servings = 1;
+	const getingredients = (list_ingredients) => {
+		let recipe_ingredients = list_ingredients,
+			new_ingredients = [];
+		for (let ingredient of recipe_ingredients) {
+			let ingredient_string: string = ingredient;
+			let array = ingredient_string.substring(0, 5).match(/\d+/g);
+			if (array) {
+				let ounces = ingredient_string.match(/\((\d+)?(.+)?(\d+)\s+\w+\)/g);
+				if (ounces) ingredient_string = ingredient_string.replace(ounces.toString(), "");
+				switch (array.length) {
+					case 1:
+						new_ingredients.push(ingredient_string.substring(array.length));
+						break;
+					case 2:
+						new_ingredients.push(ingredient_string.substring(array.length + 1));
+						break;
+					case 3:
+						new_ingredients.push(ingredient_string.substring(array.length + 2));
+						break;
+					default:
+						new_ingredients.push(ingredient_string);
+						break;
+				}
+			} else new_ingredients.push(ingredient_string);
+		}
+		return new_ingredients;
 	};
+
+	let servings = 4; //Non presente nelle API, default 4
 
 	const dispatcher = createEventDispatcher();
 
@@ -29,6 +53,45 @@
 				id: recipe_id,
 			});
 		}
+	};
+
+	const getAmounts = (list_ingredients) => {
+		let recipe_ingredients = list_ingredients,
+			new_amounts = [];
+		for (let ingredient of recipe_ingredients) {
+			let ingredient_string: string = ingredient;
+			let array = ingredient_string.substring(0, 5).match(/\d+/g);
+			let a, b, c, d;
+			if (array) {
+				switch (array.length) {
+					case 1:
+						[a] = array;
+						new_amounts.push(parseFloat(a));
+						break;
+					case 2:
+						[a, b] = array;
+						a = parseFloat(a);
+						b = parseFloat(b);
+						d = a / b;
+						new_amounts.push(d);
+						break;
+					case 3:
+						[a, b, c] = array;
+						a = parseFloat(a);
+						b = parseFloat(b);
+						c = parseFloat(c);
+						d = a + (b / c);
+						new_amounts.push(d);
+						break;
+					default:
+						new_amounts.push(0);
+						break;
+				}
+			} else {
+				new_amounts.push(0);
+			}
+		}
+		return new_amounts;
 	};
 
 	let gcd = (a, b) => {
@@ -51,54 +114,32 @@
 		return Math.floor(numerator) + "/" + Math.floor(denominator);
 	};
 
-	let amounts = [],
-		ingredients = (() => {
-			let recipe_ingridients = recipe.ingredients, new_ingridients = [];
-			console.log("before: ", recipe_ingridients)
-			for (let ingredient of recipe_ingridients) {
-				let ingridient_string: string = ingredient;
-				let array = ingridient_string.substring(0, 5).match(/\d+/g);
-				let a, b, c, d;
-				if (array) {
-					switch (array.length) {
-						case 1:
-							[a] = array;
-							amounts.push(parseFloat(a));
-							new_ingridients.push(ingridient_string.substring(1));
-							break;
-						case 2:
-							[a, b] = array;
-							a = parseFloat(a);
-							b = parseFloat(b);
-							d = a / b;
-							amounts.push(d);
-							new_ingridients.push(ingridient_string.substring(3));
-							break;
-						case 3:
-							[a, b, c] = array;
-							a = parseFloat(a);
-							b = parseFloat(b);
-							c = parseFloat(c);
-							d = a + b / c;
-							amounts.push(d);
-							new_ingridients.push(ingridient_string.substring(5));
-							break;
-						default:
-							amounts.push(0);
-							break;
-					}
-				} else {
-					amounts.push(0);
-					new_ingridients.push(ingridient_string);
+	const getAmountsFracted = (amounts) => {
+		let fraction_amounts = [];
+		for (let amount of amounts) {
+			amount = (amount * servings) / 4;
+			if (amount != 0 && amount % 1 != 0.0) {
+				if (Math.floor(amount) == 0) {
+					fraction_amounts.push(getFraction(amount % 1));
 				}
-			}
-			console.log("after: ", new_ingridients);
-			for (let amount of amounts) {
-				if (amount == 0) return;
-				amount = getFraction(amount);
-			}
-			return new_ingridients;
-		})();
+				else fraction_amounts.push(Math.floor(amount) + " " + getFraction(amount % 1));
+			} else if (amount != 0) {
+				fraction_amounts.push(amount);
+			} else fraction_amounts.push("");
+		}
+		return fraction_amounts;
+	}
+
+	let amounts = getAmounts(recipe.ingredients),
+		amounts_fracted = getAmountsFracted(amounts),
+		ingredients = getingredients(recipe.ingredients);
+
+	const handleServings = (event) => {
+		servings = servings + event.detail.variation;
+		if (servings < 1) servings = 1;
+		amounts = getAmounts(recipe.ingredients);
+		amounts_fracted = getAmountsFracted(amounts);
+	};
 
 	let seed = 0;
 	let modulus = 2 ** 32;
@@ -141,7 +182,7 @@
 					on:variation={handleServings}
 				/>
 				<nav class="level line" />
-				<IngridientList ingredients={ingredients} {amounts} />
+				<IngredientList ingredients={ingredients} amounts={amounts_fracted} />
 				<nav class="level line" />
 				<div class="container has-text-centered pb-5">
 					<ButtonIcon

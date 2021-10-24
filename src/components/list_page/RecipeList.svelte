@@ -9,8 +9,8 @@
 
 	export let bookmarks;
 
-	let page = 0,
-		out_of = Math.ceil(recipes.length / 5);
+	$: page = 0;
+	$: out_of = Math.ceil(recipes.length / 5);
 	$: recipes_showed = recipes.slice(page * 5, (page + 1) * 5);
 
 	const handleVariation = (event) => {

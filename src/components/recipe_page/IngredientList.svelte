@@ -1,15 +1,13 @@
 <script>
 	import Ingredient from "./Ingredient.svelte";
 
-	export let amounts = ["1", "2", "3","4","5"];
-	export let ingredients;
+	export let amounts, ingredients;
 
-	console.log(ingredients)
 </script>
 
 <div class="container block has-text-centered">
 	<p class="subtitle is-ubuntu has-text-weight-bold is-4">
-		Recipe Ingridients
+		Recipe ingredients
 	</p>
 </div>
 <div class="container block">

@@ -6,7 +6,7 @@
 
 	import { bookmarks_store } from "./stores/Bookmarks";
 	import { recipes_store } from "./stores/Recipes";
-	import { queries } from "./Queries"
+	import { queries } from "./Queries";
 
 	let bookmarks,
 		bookmarks_recipes = [],
@@ -17,7 +17,8 @@
 		searching = false,
 		open_recipe = false,
 		is_back_hidden = true,
-		is_bookmarks_hidden = false;
+		is_bookmarks_hidden = false,
+		notification = false;
 
 	bookmarks_store.subscribe(async (value) => {
 		bookmarks = value;
@@ -62,8 +63,20 @@
 		open_bookmarks = event.detail.open_close;
 	};
 
+	const queryNotPossible = () => {
+		notification = true;
+		setTimeout(closeNotification, 2000);
+	};
+
+	const closeNotification = () => {
+		notification = false;
+	};
+
 	async function getRecipes(query) {
-		if (!queries.includes(query)) return;
+		if (!queries.includes(query)) {
+			queryNotPossible();
+			return;
+		}
 		try {
 			let recipes_response = await fetch(
 				`https://forkify-api.herokuapp.com/api/search?q=${query}`
@@ -79,9 +92,10 @@
 	const handleSearching = async (event) => {
 		await getRecipes(event.detail.searched);
 		searching = event.detail.search;
+		open_bookmarks = false;
 	};
 
-	async function getRecipe (recipe) {
+	async function getRecipe(recipe) {
 		let recipe_data;
 		try {
 			let recipe_response = await fetch(
@@ -133,8 +147,8 @@
 					/>
 				{:else if searching && !open_recipe && recipes}
 					<RecipeList
-						bookmarks={bookmarks}
-						recipes={recipes}
+						{bookmarks}
+						{recipes}
 						on:addBookmark={addRecipeToBookmarks}
 						on:removeBookmark={removeFromBookmarks}
 						on:openRecipe={openRecipe}
@@ -154,8 +168,22 @@
 	</section>
 </main>
 
+{#if notification}
+	<div class="notification is-danger">
+		<button class="delete" on:click={closeNotification} />
+		Query not possible.
+	</div>
+{/if}
+
 <style>
 	.has-letters-spaced {
 		letter-spacing: 0.3rem;
+	}
+
+	.notification {
+		z-index: 1000;
+		position: fixed;
+		right: 15px;
+		top: 15px;
 	}
 </style>
