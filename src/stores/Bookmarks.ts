@@ -1,6 +1,8 @@
 import { writable } from 'svelte/store';
 
-const bookmarks_stored = localStorage.getItem('bookmarks');
+let bookmarks_stored = localStorage.getItem('bookmarks');
+
+if (!bookmarks_stored ) bookmarks_stored = "[]";
 
 let bookmarks;
 

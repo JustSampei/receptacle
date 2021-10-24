@@ -6,7 +6,6 @@
 
 	import { bookmarks_store } from "./stores/Bookmarks";
 	import { recipes_store } from "./stores/Recipes";
-	import { queries } from "./Queries";
 
 	let bookmarks,
 		bookmarks_recipes = [],
@@ -73,24 +72,23 @@
 	};
 
 	async function getRecipes(query) {
-		if (!queries.includes(query)) {
-			queryNotPossible();
-			return;
-		}
 		try {
 			let recipes_response = await fetch(
 				`https://forkify-api.herokuapp.com/api/search?q=${query}`
 			);
+			if (recipes_response.status == 400) {
+				queryNotPossible();
+				return;
+			}
 			let recipes_data = await recipes_response.json();
 			recipes_store.set(recipes_data.recipes);
 		} catch (e) {
-			//console.error(e);
-			recipes_store.set([]);
+			queryNotPossible();
 		}
 	}
 
 	const handleSearching = async (event) => {
-		await getRecipes(event.detail.searched);
+		await getRecipes(event.detail.searched.toLowerCase());
 		searching = event.detail.search;
 		open_bookmarks = false;
 	};
